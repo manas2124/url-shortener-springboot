@@ -32,17 +32,17 @@ A full-stack URL Shortener application that converts long URLs into short links,
 - src/
 - └── main/
 - ├── java/com/manas/urlshortener/
-│ ├── controller/
-│ ├── service/
-│ ├── repository/
-│ ├── model/
-│ └── util/
-└── resources/
-├── static/
-│ ├── index.html
-│ ├── script.js
-│ └── style.css
-└── application.properties
+- │ ├── controller/
+- │ ├── service/
+- │ ├── repository/
+- │ ├── model/
+- │ └── util/
+- └── resources/
+- ├── static/
+- │ ├── index.html
+- │ ├── script.js
+- │ └── style.css
+- └── application.properties
 
 ---
 
