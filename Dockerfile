@@ -1,5 +1,5 @@
 # Use Java 17 (LTS)
-FROM openjdk:19-jdk-slim
+FROM openjdk:17-jdk-slim
 
 # Set working directory
 WORKDIR /app
