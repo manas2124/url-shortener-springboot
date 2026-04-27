@@ -7,17 +7,16 @@ A full-stack URL Shortener application that converts long URLs into short links,
 
 ## 🚀 Features
 
-🔹 Generate short URLs (6–8 character slug)
-🔹 Idempotency (same URL → same slug until expiry)
-🔹 Redirect to original URL
-🔹 Analytics (track number of clicks)
-🔹 Expiry handling (links expire after a fixed time)
-🔹 Auto-delete expired links
-🔹 Live countdown timer (frontend)
-🔹 Real-time analytics update
-🔹 URL validation
-🔹 Clear button for better UX
-
+- Generate short URLs (6–8 character slug)
+- Idempotency (same URL → same slug until expiry)
+- Redirect to original URL
+- Analytics (track number of clicks)
+- Expiry handling (links expire after a fixed time)
+- Auto-delete expired links
+- Live countdown timer (frontend)
+- Real-time analytics update
+- URL validation
+- Clear button for better UX
 ---
 
 ## 🛠 Tech Stack
