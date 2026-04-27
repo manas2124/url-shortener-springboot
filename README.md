@@ -29,9 +29,9 @@ A full-stack URL Shortener application that converts long URLs into short links,
 ---
 
 ## 📂 Project Structure
-src/
-└── main/
-├── java/com/manas/urlshortener/
+- src/
+- └── main/
+- ├── java/com/manas/urlshortener/
 │ ├── controller/
 │ ├── service/
 │ ├── repository/
