@@ -1,13 +1,20 @@
-# Use Java 17 (LTS)
-FROM openjdk:17-jdk-slim
+# -------- BUILD STAGE --------
+FROM maven:3.9.9-eclipse-temurin-17 AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Copy jar file
-COPY target/urlshortener-0.0.1-SNAPSHOT.jar app.jar
-# Expose port
+COPY pom.xml .
+COPY src ./src
+
+RUN mvn clean package -DskipTests
+
+# -------- RUN STAGE --------
+FROM eclipse-temurin:17-jdk-jammy
+
+WORKDIR /app
+
+COPY --from=builder /app/target/*.jar app.jar
+
 EXPOSE 8080
 
-# Run application
-ENTRYPOINT ["java","-jar","/app.jar"]
+ENTRYPOINT ["java","-jar","app.jar"]
