@@ -1,17 +1,19 @@
 package com.manas.urlshortener.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-
 import java.time.Instant;
 
 @Document(collection = "urls")
 public class UrlEntity {
 
     @Id
-    private String id; // MongoDB ObjectId
+    private String id;
 
+    @Indexed(unique = true)
     private String slug;
+
     private String longUrl;
     private Instant expiryTime;
     private long accessCount;
@@ -25,8 +27,6 @@ public class UrlEntity {
         this.expiryTime = expiryTime;
         this.accessCount = 0;
     }
-
-    // ---------- Getters & Setters ----------
 
     public String getId() {
         return id;

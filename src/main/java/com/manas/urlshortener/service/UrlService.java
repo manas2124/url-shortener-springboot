@@ -11,8 +11,7 @@ import java.util.Optional;
 @Service
 public class UrlService {
 
-    // 1 minute expiry (you can change later)
-    private static final long EXPIRY_DURATION_SECONDS = 60;
+    private static final long EXPIRY_DURATION_SECONDS = 5 * 60;
 
     private final UrlRepository urlRepository;
 
@@ -20,47 +19,66 @@ public class UrlService {
         this.urlRepository = urlRepository;
     }
 
-    // ================= SHORTEN URL =================
-    public UrlEntity shortenUrl(String longUrl) {
-
-        // 🔹 Idempotency check
-        Optional<UrlEntity> existing = urlRepository.findByLongUrl(longUrl);
-        if (existing.isPresent()) {
-            return existing.get();
+    private boolean isValidUrl(String url) {
+        try {
+            new java.net.URI(url).toURL();
+            return true;
+        } catch (Exception e) {
+            return false;
         }
-
-        // 🔹 Generate slug
-        String slug = SlugGenerator.generateSlug(longUrl);
-
-        // 🔹 Set expiry time
-        Instant expiryTime = Instant.now().plusSeconds(EXPIRY_DURATION_SECONDS);
-
-        UrlEntity urlEntity = new UrlEntity(slug, longUrl, expiryTime);
-
-        return urlRepository.save(urlEntity);
     }
 
-    // ================= RESOLVE URL =================
+    // ================= SHORTEN =================
+    public UrlEntity shortenUrl(String longUrl) {
+
+        if (!isValidUrl(longUrl)) {
+            throw new IllegalArgumentException("Invalid URL");
+        }
+
+        Optional<UrlEntity> existing = urlRepository.findByLongUrl(longUrl);
+
+        if (existing.isPresent()) {
+            UrlEntity old = existing.get();
+
+            // If still valid → return same slug (idempotency)
+            if (Instant.now().isBefore(old.getExpiryTime())) {
+                return old;
+            }
+
+            // If expired → delete immediately
+            urlRepository.delete(old);
+        }
+
+        String slug;
+        do {
+            slug = SlugGenerator.generateSlug(longUrl + System.nanoTime());
+        } while (urlRepository.findBySlug(slug).isPresent());
+
+        Instant expiryTime = Instant.now().plusSeconds(EXPIRY_DURATION_SECONDS);
+        UrlEntity entity = new UrlEntity(slug, longUrl, expiryTime);
+
+        return urlRepository.save(entity);
+    }
+
+    // ================= RESOLVE =================
     public Optional<UrlEntity> resolveUrl(String slug) {
 
-        Optional<UrlEntity> optionalUrl = urlRepository.findBySlug(slug);
+        Optional<UrlEntity> optional = urlRepository.findBySlug(slug);
 
-        if (optionalUrl.isEmpty()) {
+        if (optional.isEmpty())
+            return Optional.empty();
+
+        UrlEntity entity = optional.get();
+
+        if (Instant.now().isAfter(entity.getExpiryTime())) {
+            urlRepository.delete(entity);
             return Optional.empty();
         }
 
-        UrlEntity urlEntity = optionalUrl.get();
+        entity.setAccessCount(entity.getAccessCount() + 1);
+        urlRepository.save(entity);
 
-        // ⛔ Expiry check
-        if (Instant.now().isAfter(urlEntity.getExpiryTime())) {
-            return Optional.empty();
-        }
-
-        // ✅ Increment access count
-        urlEntity.setAccessCount(urlEntity.getAccessCount() + 1);
-        urlRepository.save(urlEntity);
-
-        return Optional.of(urlEntity);
+        return Optional.of(entity);
     }
 
     // ================= ANALYTICS =================

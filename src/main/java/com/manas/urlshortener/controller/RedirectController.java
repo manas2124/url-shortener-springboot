@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.view.RedirectView;
 
 @Controller
@@ -19,22 +20,22 @@ public class RedirectController {
     @GetMapping("/r/{slug}")
     public RedirectView redirect(@PathVariable String slug) {
 
-        var optionalUrl = urlService.resolveUrl(slug);
+        var optional = urlService.resolveUrl(slug);
 
-        if (optionalUrl.isEmpty()) {
-            throw new RuntimeException("Link Expired or Not Found");
+        if (optional.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Link expired or not found");
         }
 
-        String longUrl = optionalUrl.get().getLongUrl();
+        String longUrl = optional.get().getLongUrl();
 
-        if (!longUrl.startsWith("http://") && !longUrl.startsWith("https://")) {
+        if (!longUrl.startsWith("http")) {
             longUrl = "https://" + longUrl;
         }
 
-        RedirectView redirectView = new RedirectView();
-        redirectView.setUrl(longUrl);
-        redirectView.setStatusCode(HttpStatus.FOUND); // 302
-
-        return redirectView;
+        RedirectView rv = new RedirectView(longUrl);
+        rv.setStatusCode(HttpStatus.FOUND);
+        return rv;
     }
 }
